@@ -2,11 +2,6 @@
 let currentPage = 1;
 let currentView = "cards";
 
-// Initialize the application
-document.addEventListener("DOMContentLoaded", () => {
-  fetchMakeupProducts();
-});
-
 // Fetch Makeup Products
 async function fetchMakeupProducts() {
   const brand = document.getElementById("brandSelect").value;
@@ -21,27 +16,16 @@ async function fetchMakeupProducts() {
 
   try {
     document.getElementById("spinner").style.display = "block";
-    const productContainer = document.getElementById("product-list");
-    if (productContainer) {
-      productContainer.innerHTML = "<p>Product Data</p>";
-    } else {
-      console.error(
-        "Error: productContainer is null. Check if it exists in HTML."
-      );
-    }
-let products = []; // Instead of const
-products = await fetch("http://makeup-api.herokuapp.com/api/v1/products.json")
-.then((response) => response.json());
 
+    const response = await axios.get(
+      `http://makeup-api.herokuapp.com/api/v1/products.json?brand=${brand}&product_type=${category}`
+    );
+    let products = response.data; // Full product list
 
     // Apply Sorting
     products = sortProducts(products, sortType);
 
-    displayProducts(products.slice((currentPage - 1) * 10, currentPage * 10));
-    // Show 10 products per page
-      
-
-  
+    displayProducts(products.slice((currentPage - 1) * 10, currentPage * 10)); // Show 10 products per page
     updatePaginationButtons(products.length);
   } catch (error) {
     console.error("Error fetching makeup products:", error);
@@ -90,11 +74,7 @@ function displayProducts(products) {
   const tableBody = document.getElementById("product-table-body");
 
   productContainer.innerHTML = "";
-  if (tableBody) {
-    tableBody.innerHTML = "";
-  } else {
-    console.warn("Warning: tableBody is null. Check if it exists in HTML.");
-  }
+  tableBody.innerHTML = "";
 
   products.forEach((product) => {
     const card = document.createElement("div");
