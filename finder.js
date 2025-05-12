@@ -54,19 +54,20 @@ function updatePaginationButtons(totalProducts) {
     currentPage * 10 >= totalProducts;
   document.getElementById("prevBtn").disabled = currentPage === 1;
 }
+function prevPage() {
+  if (currentPage > 1) {
+    currentPage--; 
+    fetchMakeupProducts(); 
+  }
+}
 
 // Navigate Pages
 function nextPage() {
   currentPage++;
   fetchMakeupProducts();
 }
+console.log(typeof nextPage); // Should print "function"
 
-function prevPage() {
-  if (currentPage > 1) {
-    currentPage--;
-    fetchMakeupProducts();
-  }
-}
 
 // Display Products in Cards and Table
 function displayProducts(products) {
