@@ -1,10 +1,17 @@
 // Global variables for pagination and view state
-var currentPage = 1;
-var currentView = "cards";
+let currentPage = 1;
+let currentView = "cards";
 
+// Initialize the application
+document.addEventListener("DOMContentLoaded", () => {
+  fetchMakeupProducts();
+});
+
+// Fetch Makeup Products
 async function fetchMakeupProducts() {
   const brand = document.getElementById("brandSelect").value;
   const category = document.getElementById("categorySelect").value;
+  const sortType = document.getElementById("sortSelect").value;
 
   // Validate input selections
   if (!brand || !category) {
@@ -13,36 +20,63 @@ async function fetchMakeupProducts() {
   }
 
   try {
-    document.getElementById("spinner").style.display = "block"; // Show spinner
+    document.getElementById("spinner").style.display = "block";
+    const productContainer = document.getElementById("product-list");
+    if (productContainer) {
+      productContainer.innerHTML = "<p>Product Data</p>";
+    } else {
+      console.error(
+        "Error: productContainer is null. Check if it exists in HTML."
+      );
+    }
+let products = []; // Instead of const
+products = await fetch("http://makeup-api.herokuapp.com/api/v1/products.json")
+.then((response) => response.json());
 
-    const response = await axios.get(
-      `http://makeup-api.herokuapp.com/api/v1/products.json?brand=${brand}&product_type=${category}`
-    );
-    const products = response.data; // Full product list
 
-    displayProducts(products.slice((currentPage - 1) * 10, currentPage * 10)); // Show 10 products per page
+    // Apply Sorting
+    products = sortProducts(products, sortType);
+
+    displayProducts(products.slice((currentPage - 1) * 10, currentPage * 10));
+    // Show 10 products per page
+      
+
+  
     updatePaginationButtons(products.length);
   } catch (error) {
     console.error("Error fetching makeup products:", error);
   } finally {
-    document.getElementById("spinner").style.display = "none"; // Hide spinner
+    document.getElementById("spinner").style.display = "none";
   }
 }
 
-// Function to update pagination buttons
+// Sorting Function
+function sortProducts(products, sortType) {
+  if (sortType === "price-low") {
+    return products.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+  } else if (sortType === "price-high") {
+    return products.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+  } else if (sortType === "name-asc") {
+    return products.sort((a, b) => a.name.localeCompare(b.name));
+  } else if (sortType === "name-desc") {
+    return products.sort((a, b) => b.name.localeCompare(a.name));
+  }
+  return products; // Default case
+}
+
+// Pagination Buttons
 function updatePaginationButtons(totalProducts) {
   document.getElementById("nextBtn").disabled =
     currentPage * 10 >= totalProducts;
   document.getElementById("prevBtn").disabled = currentPage === 1;
 }
 
-// Navigate to next page
+// Navigate Pages
 function nextPage() {
   currentPage++;
   fetchMakeupProducts();
 }
 
-// Navigate to previous page
 function prevPage() {
   if (currentPage > 1) {
     currentPage--;
@@ -50,30 +84,21 @@ function prevPage() {
   }
 }
 
-// Function to display products dynamically
+// Display Products in Cards and Table
 function displayProducts(products) {
-  const sortType = document.getElementById("sortSelect").value;
   const productContainer = document.getElementById("product-list");
   const tableBody = document.getElementById("product-table-body");
 
-  productContainer.innerHTML = ""; // Clear previous content
-  tableBody.innerHTML = "";
-
-  // Sorting logic
-  if (sortType === "price-low") {
-    products.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
-  } else if (sortType === "price-high") {
-    products.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
-  } else if (sortType === "name-asc") {
-    products.sort((a, b) => a.name.localeCompare(b.name));
-  } else if (sortType === "name-desc") {
-    products.sort((a, b) => b.name.localeCompare(a.name));
+  productContainer.innerHTML = "";
+  if (tableBody) {
+    tableBody.innerHTML = "";
+  } else {
+    console.warn("Warning: tableBody is null. Check if it exists in HTML.");
   }
 
   products.forEach((product) => {
-    // Create Bootstrap card
     const card = document.createElement("div");
-    card.classList.add("col-md-4", "fade-in"); // Apply fade-in animation
+    card.classList.add("col-md-4", "fade-in");
 
     card.innerHTML = `
             <div class="card shadow-sm">
@@ -98,7 +123,6 @@ function displayProducts(products) {
         `;
     productContainer.appendChild(card);
 
-    // Create table row
     const row = document.createElement("tr");
     row.innerHTML = `
             <td>${product.name}</td>
@@ -110,15 +134,18 @@ function displayProducts(products) {
   });
 }
 
-// Function to toggle between Card and Table views
+// Toggle Card & Table View
 function toggleView() {
+  const productList = document.getElementById("product-list");
+  const productTable = document.getElementById("product-table");
+
   if (currentView === "cards") {
-    document.getElementById("product-list").style.display = "none";
-    document.getElementById("product-table").style.display = "table";
+    productList.style.display = "none";
+    productTable.style.display = "table";
     currentView = "table";
   } else {
-    document.getElementById("product-list").style.display = "flex";
-    document.getElementById("product-table").style.display = "none";
+    productList.style.display = "flex";
+    productTable.style.display = "none";
     currentView = "cards";
   }
 }
