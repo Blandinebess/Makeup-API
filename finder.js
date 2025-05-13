@@ -3,7 +3,7 @@ let currentPage = 1;
 let currentView = "cards";
 
 // Fetch Makeup Products
-async function fetchMakeupProducts() {
+async function fetchMakeupProducts(currentPage) {
   const brand = document.getElementById("brandSelect").value;
   const category = document.getElementById("categorySelect").value;
   const sortType = document.getElementById("sortSelect").value;
@@ -33,41 +33,6 @@ async function fetchMakeupProducts() {
     document.getElementById("spinner").style.display = "none";
   }
 }
-
-// Sorting Function
-function sortProducts(products, sortType) {
-  if (sortType === "price-low") {
-    return products.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
-  } else if (sortType === "price-high") {
-    return products.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
-  } else if (sortType === "name-asc") {
-    return products.sort((a, b) => a.name.localeCompare(b.name));
-  } else if (sortType === "name-desc") {
-    return products.sort((a, b) => b.name.localeCompare(a.name));
-  }
-  return products; // Default case
-}
-
-// Pagination Buttons
-function updatePaginationButtons(totalProducts) {
-  document.getElementById("nextBtn").disabled =
-    currentPage * 10 >= totalProducts;
-  document.getElementById("prevBtn").disabled = currentPage === 1;
-}
-function prevPage() {
-  if (currentPage > 1) {
-    currentPage--; 
-    fetchMakeupProducts(); 
-  }
-}
-
-// Navigate Pages
-function nextPage() {
-  currentPage++;
-  fetchMakeupProducts();
-}
-console.log(typeof nextPage); // Should print "function"
-
 
 // Display Products in Cards and Table
 function displayProducts(products) {
